@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -64,6 +65,7 @@ class SelectLocationFragment : BaseFragment() {
             googleMap = map
             setPoiMapClick(googleMap)
             setMapStyle(googleMap)
+            enableUserLocation()
         }
 
 //        TODO: call this function after the user confirms on the selected location
@@ -133,4 +135,38 @@ class SelectLocationFragment : BaseFragment() {
         }
         else -> super.onOptionsItemSelected(item)
     }
+
+    private fun enableUserLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+            googleMap.isMyLocationEnabled = true
+        } else {
+            // If the permission hasn't been enabled, send a request to the user to grant it
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                enableUserLocation()
+            }
+        }
+    }
+
+    companion object {
+        /**
+         * Request code for location permission request.
+         *
+         * @see .onRequestPermissionsResult
+         */
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
+    }
+
 }
