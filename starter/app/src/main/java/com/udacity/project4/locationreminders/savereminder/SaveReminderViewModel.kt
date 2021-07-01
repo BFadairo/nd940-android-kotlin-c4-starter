@@ -79,4 +79,19 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         }
         return true
     }
+
+    /**
+     * Validate a POI has been selected
+     */
+    fun validatePoiSelected(poi: PointOfInterest?): Boolean {
+        if (poi == null) {
+            showToast.value = app.getString(R.string.select_poi)
+            return false
+        } else {
+            selectedPOI.value = poi
+            reminderSelectedLocationStr.value = poi.name
+        }
+        navigationCommand.value = NavigationCommand.Back
+        return true
+    }
 }
