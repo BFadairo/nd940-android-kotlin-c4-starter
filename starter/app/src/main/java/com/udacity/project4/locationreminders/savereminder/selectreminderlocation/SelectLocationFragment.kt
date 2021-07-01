@@ -63,11 +63,6 @@ class SelectLocationFragment : BaseFragment() {
         })
         locationManager = LocationServices.getFusedLocationProviderClient(requireContext())
 
-//        TODO: add the map setup implementation
-//        TODO: zoom to the user location after taking his permission
-//        TODO: add style to the map
-//        TODO: put a marker to location that the user selected
-
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { map ->
             googleMap = map
@@ -76,7 +71,6 @@ class SelectLocationFragment : BaseFragment() {
             enableUserLocation()
         }
 
-//        TODO: call this function after the user confirms on the selected location
         binding.savePoiButton.setOnClickListener {
             onLocationSelected()
         }
@@ -121,9 +115,6 @@ class SelectLocationFragment : BaseFragment() {
     }
 
     private fun onLocationSelected() {
-        //        TODO: When the user confirms on the selected location,
-        //         send back the selected location details to the view model
-        //         and navigate back to the previous fragment to save the reminder and add the geofence
         _viewModel.validatePoiSelected(selectedPoi)
 
     }
