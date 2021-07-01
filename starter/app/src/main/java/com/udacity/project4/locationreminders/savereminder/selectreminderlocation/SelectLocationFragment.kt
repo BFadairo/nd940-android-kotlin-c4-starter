@@ -8,12 +8,15 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
@@ -32,6 +35,7 @@ import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import java.util.*
 
 class SelectLocationFragment : BaseFragment() {
 
@@ -40,6 +44,7 @@ class SelectLocationFragment : BaseFragment() {
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var googleMap: GoogleMap
     private var selectedPoi: PointOfInterest? = null
+    private lateinit var locationManager: FusedLocationProviderClient
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -60,6 +65,8 @@ class SelectLocationFragment : BaseFragment() {
         _viewModel.showToast.observe(viewLifecycleOwner, Observer {
             Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
         })
+        locationManager = LocationServices.getFusedLocationProviderClient(requireContext())
+
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { map ->
             googleMap = map
@@ -78,11 +85,20 @@ class SelectLocationFragment : BaseFragment() {
 
     private fun setPoiMapClick(map: GoogleMap) {
         googleMap.setOnPoiClickListener { poi ->
+            googleMap.clear()
             selectedPoi = poi
+            val snippet = String.format(
+                Locale.getDefault(),
+                resources.getString(R.string.lat_long_snippet),
+                poi.latLng.latitude,
+                poi.latLng.longitude
+            )
+
             val poiMarker = map.addMarker(
                 MarkerOptions()
                     .position(poi.latLng)
                     .title(poi.name)
+                    .snippet(snippet)
             )
             poiMarker.showInfoWindow()
         }
@@ -139,6 +155,9 @@ class SelectLocationFragment : BaseFragment() {
     private fun enableUserLocation() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
+            locationManager.lastLocation.addOnSuccessListener {
+                zoomToCurrentLocation(it)
+            }
             googleMap.isMyLocationEnabled = true
         } else {
             // If the permission hasn't been enabled, send a request to the user to grant it
@@ -146,6 +165,11 @@ class SelectLocationFragment : BaseFragment() {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE)
         }
+    }
+
+    private fun zoomToCurrentLocation(location: Location) {
+        val currentLocationLatLng = LatLng(location.latitude, location.longitude)
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocationLatLng, 15f))
     }
 
     override fun onRequestPermissionsResult(
