@@ -58,9 +58,6 @@ class SelectLocationFragment : BaseFragment() {
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
-        _viewModel.showToast.observe(viewLifecycleOwner, Observer {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-        })
         locationManager = LocationServices.getFusedLocationProviderClient(requireContext())
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
