@@ -44,4 +44,7 @@
     <string name="description_label">Description:</string>
     <string name="title_label">Title:</string>
     <string name="reminder_details">Reminder Details</string>
+
+    <!-- Firebase OAuth Client ID -->
+<!--    <string name="firebase_client_id">818995056820-1nv20uk6lrq8redibtlrmmuf1kfecsf6.apps.googleusercontent.com</string>-->
 </resources>
