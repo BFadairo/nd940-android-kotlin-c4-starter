@@ -50,7 +50,13 @@ class RemindersListViewModelTest {
         val reminder = ReminderDTO("Grab Burger", null, "Green Bay", 32.02, 34.02)
         dataSource.saveReminder(reminder)
         // WHEN - loading Reminders
+        mainCoroutineRule.pauseDispatcher()
         remindersViewModel.loadReminders()
+
+        val loadingValue = remindersViewModel.showLoading.getOrAwaitValue()
+        assertThat(loadingValue, `is`(true))
+
+        mainCoroutineRule.resumeDispatcher()
         val reminders = remindersViewModel.remindersList.getOrAwaitValue()
         val showNoDataValue = remindersViewModel.showNoData.getOrAwaitValue()
         // THEN -  No Data Value should be false if the value is greater than 0

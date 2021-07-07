@@ -57,18 +57,21 @@ class SaveReminderViewModelTest {
         // GIVEN - A fresh Save Reminder View Model
         // WHEN - A Reminder is saved
         val reminder = ReminderDataItem("Grab Burger", null, "Green Bay", 32.02, 34.02)
+        mainCoroutineRule.pauseDispatcher()
         saveReminderViewModel.validateAndSaveReminder(reminder)
+        val loadingValue = saveReminderViewModel.showLoading.getOrAwaitValue()
+        assertThat(saveReminderViewModel.showLoading.getOrAwaitValue(), `is`(true))
+        mainCoroutineRule.resumeDispatcher()
         // THEN - Check data source for new reminder
         val retrievedReminder = dataSource.getReminder(reminder.id) as Result.Success
         val toastValue = saveReminderViewModel.showToast.getOrAwaitValue()
-        val loadingValue = saveReminderViewModel.showLoading.getOrAwaitValue()
         assertThat(retrievedReminder.data.title, `is`(reminder.title))
         assertThat(retrievedReminder.data.description, `is`(reminder.description))
         assertThat(retrievedReminder.data.location, `is`(reminder.location))
         assertThat(retrievedReminder.data.latitude, `is`(reminder.latitude))
         assertThat(retrievedReminder.data.longitude, `is`(reminder.longitude))
         assertThat(toastValue, `is`("Reminder Saved !"))
-        assertThat(loadingValue, `is`(false))
+        assertThat(saveReminderViewModel.showLoading.getOrAwaitValue(), `is`(false))
     }
 
     @Test
