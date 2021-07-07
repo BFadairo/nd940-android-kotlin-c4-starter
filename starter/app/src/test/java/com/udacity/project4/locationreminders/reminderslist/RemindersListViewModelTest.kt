@@ -87,6 +87,19 @@ class RemindersListViewModelTest {
         )
     }
 
+    @Test
+    fun newViewModel_loadReminders_returnError() {
+        // GIVEN - a Fresh view model with no reminders
+        // WHEN - After loading Reminders and returns an error
+        dataSource.setReturnError(true)
+        remindersViewModel.loadReminders()
+        // THEN - The Snackbar livedata should contain a message stating "Reminders Not Found"
+        val snackBarMessage = remindersViewModel.showSnackBar.getOrAwaitValue()
+        assertThat(
+            snackBarMessage, `is`("Reminders Not Found")
+        )
+    }
+
     @After
     fun tearDown() {
         stopKoin()
