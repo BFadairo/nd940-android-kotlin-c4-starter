@@ -97,6 +97,7 @@ class ReminderListFragmentTest: KoinTest {
         repository.saveReminder(reminder1)
         // WHEN - RemindersListFragment is launched to display list
         launchFragmentInContainer<ReminderListFragment>(null, R.style.AppTheme)
+        // THEN - Verify Reminders are displayed
         onView(withId(R.id.reminderssRecyclerView)).check(matches(isDisplayed()))
         onView(withText(reminder.title)).check(matches(isDisplayed()))
         onView(withText(reminder1.title)).check(matches(isDisplayed()))
