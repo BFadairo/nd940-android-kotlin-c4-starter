@@ -45,7 +45,7 @@ class RemindersListViewModelTest {
     }
 
     @Test
-    fun newViewModel_loadReminders_notEmpty() = runBlockingTest {
+    fun newViewModel_loadReminders_notEmpty() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A fresh view model with a reminder
         val reminder = ReminderDTO("Grab Burger", null, "Green Bay", 32.02, 34.02)
         dataSource.saveReminder(reminder)

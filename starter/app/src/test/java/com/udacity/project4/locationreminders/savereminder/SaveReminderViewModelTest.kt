@@ -53,7 +53,7 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun newViewModel_saveValidReminder() = runBlockingTest {
+    fun newViewModel_saveValidReminder() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A fresh Save Reminder View Model
         // WHEN - A Reminder is saved
         val reminder = ReminderDataItem("Grab Burger", null, "Green Bay", 32.02, 34.02)
@@ -72,7 +72,7 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun newViewModel_saveInvalidTitleReminder() = runBlockingTest {
+    fun newViewModel_saveInvalidTitleReminder() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A Fresh view model
         // WHEN - A invalid reminder is attempted to be saved
         val reminder = ReminderDataItem(null, null, "Green Bay", 32.02, 34.02)
@@ -83,7 +83,7 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun newViewModel_saveInvalidLocationReminder() = runBlockingTest {
+    fun newViewModel_saveInvalidLocationReminder() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A Fresh view model
         // WHEN - A invalid reminder is attempted to be saved
         val reminder = ReminderDataItem("Get Burger", null, null, 32.02, 34.02)
@@ -94,7 +94,7 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun newViewModel_saveValidPoiReminder() = runBlockingTest {
+    fun newViewModel_saveValidPoiReminder() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A Fresh view model
         // WHEN - A Valid reminder is attempted to be saved
         val poi = LatLng(32.02, 34.02)
@@ -110,7 +110,7 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun newViewModel_saveInvalidPoiReminder() = runBlockingTest {
+    fun newViewModel_saveInvalidPoiReminder() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A Fresh view model
         // WHEN - A invalid reminder is attempted to be saved
         saveReminderViewModel.validatePoiSelected(null)
