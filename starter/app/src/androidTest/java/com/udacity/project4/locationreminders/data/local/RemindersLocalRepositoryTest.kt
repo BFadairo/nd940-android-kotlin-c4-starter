@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
+import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,9 @@ class RemindersLocalRepositoryTest {
     private lateinit var remindersLocalRepository: RemindersLocalRepository
 
     @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
+
+    @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
     @Before
@@ -45,13 +49,13 @@ class RemindersLocalRepositoryTest {
 
     @Before
     fun createRepository() {
-        remindersLocalRepository = RemindersLocalRepository(reminderDao, Dispatchers.Unconfined)
+        remindersLocalRepository = RemindersLocalRepository(reminderDao, Dispatchers.Main)
     }
 
     @Test
     @ExperimentalCoroutinesApi
     @Throws(Exception::class)
-    fun getReminders_requestAllRemindersFromLocalDataSource() = runBlockingTest {
+    fun getReminders_requestAllRemindersFromLocalDataSource() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A reminder is added to the repository
         val reminder = ReminderDTO("Grab Burger", null, "Green Bay", 32.02, 34.02)
         remindersLocalRepository.saveReminder(reminder)
@@ -63,7 +67,7 @@ class RemindersLocalRepositoryTest {
 
     @Test
     @ExperimentalCoroutinesApi
-    fun addReminder_toLocalDataSource() = runBlockingTest {
+    fun addReminder_toLocalDataSource() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A new reminder is saved to the database
         val reminder = ReminderDTO("Grab Burger", null, "Green Bay", 32.02, 34.02)
         remindersLocalRepository.saveReminder(reminder)
@@ -79,7 +83,7 @@ class RemindersLocalRepositoryTest {
 
     @Test
     @ExperimentalCoroutinesApi
-    fun deleteReminders_fromLocalDataSource() = runBlockingTest {
+    fun deleteReminders_fromLocalDataSource() = mainCoroutineRule.runBlockingTest {
         // GIVEN - Reminders added to the repository
         val reminder = ReminderDTO("Grab Burger", null, "Green Bay", 32.02, 34.02)
         remindersLocalRepository.saveReminder(reminder)
@@ -94,7 +98,7 @@ class RemindersLocalRepositoryTest {
     @After
     @Throws(IOException::class)
     fun closeDb() {
-        runBlockingTest {
+        mainCoroutineRule.runBlockingTest {
             reminderDao.deleteAllReminders()
         }
         db.close()
