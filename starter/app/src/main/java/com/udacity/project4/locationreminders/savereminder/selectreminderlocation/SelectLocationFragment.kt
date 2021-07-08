@@ -87,7 +87,7 @@ class SelectLocationFragment : BaseFragment() {
     }
 
     private fun clearMapOnClick(map: GoogleMap) {
-        googleMap.clear()
+        map.clear()
         selectedPoi = null
     }
 
