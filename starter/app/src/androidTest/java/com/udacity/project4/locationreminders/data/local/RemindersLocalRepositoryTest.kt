@@ -67,6 +67,16 @@ class RemindersLocalRepositoryTest {
 
     @Test
     @ExperimentalCoroutinesApi
+    fun getRemindersById_returnsError() = mainCoroutineRule.runBlockingTest {
+        // GIVEN - Given an empty list of reminders
+        // WHEN - A reminder is attempted to be fetched
+        val fetchedReminder = remindersLocalRepository.getReminder("1") as Result.Error
+        // THEN - An error message is returned
+        assertThat(fetchedReminder.message, `is`("Reminder not found!"))
+    }
+
+    @Test
+    @ExperimentalCoroutinesApi
     fun addReminder_toLocalDataSource() = mainCoroutineRule.runBlockingTest {
         // GIVEN - A new reminder is saved to the database
         val reminder = ReminderDTO("Grab Burger", null, "Green Bay", 32.02, 34.02)
