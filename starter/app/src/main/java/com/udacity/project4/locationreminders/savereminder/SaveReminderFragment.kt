@@ -89,7 +89,6 @@ class SaveReminderFragment : BaseFragment() {
             if (reminder.latitude != null && reminder.longitude != null) {
                 checkPermissionsAndStartGeofencing(reminder.id, reminder.latitude as Double, reminder.longitude as Double)
             }
-            _viewModel.validateAndSaveReminder(reminder)
 
         }
     }
@@ -120,9 +119,11 @@ class SaveReminderFragment : BaseFragment() {
         geoFencingClient.addGeofences(geoFenceRequest, geoFencingPendingIntent)?.run {
             addOnSuccessListener {
                 Log.i("SaveReminderFragment", "GeoFence Added")
+                _viewModel.validateAndSaveReminder(reminder)
             }
             addOnFailureListener {
                 Log.e("SaveReminderFragment", "GeoFence Failed to add")
+                Toast.makeText(requireContext(), "Failed to add location! Try again.", Toast.LENGTH_SHORT).show()
             }
         }
     }

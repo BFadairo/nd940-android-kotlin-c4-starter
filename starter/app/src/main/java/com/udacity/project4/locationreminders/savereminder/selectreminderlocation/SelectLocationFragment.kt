@@ -10,7 +10,9 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -28,6 +30,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -46,6 +49,8 @@ class SelectLocationFragment : BaseFragment() {
     private var selectedPoi: PointOfInterest? = null
     private lateinit var locationManager: FusedLocationProviderClient
 
+    private lateinit var snackbar: Snackbar
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -60,11 +65,16 @@ class SelectLocationFragment : BaseFragment() {
 
         locationManager = LocationServices.getFusedLocationProviderClient(requireContext())
 
+        _viewModel.showSnackBar.observe(viewLifecycleOwner, Observer {
+
+        })
+
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { map ->
             googleMap = map
             setPoiMapClick(googleMap)
             setMapStyle(googleMap)
+            setMapClick(googleMap)
             enableUserLocation()
         }
 
@@ -75,9 +85,34 @@ class SelectLocationFragment : BaseFragment() {
         return binding.root
     }
 
+    private fun clearMapOnClick(map: GoogleMap) {
+        googleMap.clear()
+        selectedPoi = null
+    }
+
+    private fun setMapClick(map: GoogleMap) {
+        googleMap.setOnMapLongClickListener {
+            clearMapOnClick(map)
+            selectedPoi = PointOfInterest(it, "Custom Location", "Custom Location")
+            val snippet = String.format(
+                Locale.getDefault(),
+                resources.getString(R.string.lat_long_snippet),
+                it.latitude,
+                it.longitude
+            )
+
+            map.addMarker(
+                MarkerOptions()
+                    .position(it)
+                    .title("Custom Location")
+                    .snippet(snippet)
+            )
+        }
+    }
+
     private fun setPoiMapClick(map: GoogleMap) {
         googleMap.setOnPoiClickListener { poi ->
-            googleMap.clear()
+            clearMapOnClick(map)
             selectedPoi = poi
             val snippet = String.format(
                 Locale.getDefault(),
@@ -168,9 +203,31 @@ class SelectLocationFragment : BaseFragment() {
     ) {
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                binding.savePoiButton.visibility = View.VISIBLE
                 enableUserLocation()
+            } else {
+                binding.savePoiButton.visibility = View.GONE
+                snackbar = Snackbar.make(
+                    requireContext(),
+                    binding.savePoiButton,
+                    getString(R.string.permission_denied_explanation),
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction(R.string.settings) {
+                        startActivity(Intent().apply {
+                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        })
+                    }
+                snackbar.show()
             }
         }
+    }
+
+    override fun onDestroy() {
+        snackbar.dismiss()
+        super.onDestroy()
     }
 
     companion object {
