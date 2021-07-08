@@ -78,9 +78,7 @@ class ReminderListFragment : BaseFragment() {
         when (item.itemId) {
             R.id.logout -> {
                 AuthUI.getInstance().signOut(requireContext())
-                _viewModel.navigationCommand.postValue(NavigationCommand.Back)
-                val intent = Intent(requireActivity(), AuthenticationActivity::class.java)
-                startActivity(intent)
+                requireActivity().finish()
             }
         }
         return super.onOptionsItemSelected(item)
