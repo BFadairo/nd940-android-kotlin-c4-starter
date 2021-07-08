@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 import android.Manifest
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -49,7 +50,7 @@ class SelectLocationFragment : BaseFragment() {
     private var selectedPoi: PointOfInterest? = null
     private lateinit var locationManager: FusedLocationProviderClient
 
-    private lateinit var snackbar: Snackbar
+    private var snackbar: Snackbar? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -182,12 +183,14 @@ class SelectLocationFragment : BaseFragment() {
             locationManager.lastLocation.addOnSuccessListener {
                 zoomToCurrentLocation(it)
             }
+            binding.savePoiButton.visibility = View.VISIBLE
             googleMap.isMyLocationEnabled = true
         } else {
             // If the permission hasn't been enabled, send a request to the user to grant it
             requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE)
+            binding.savePoiButton.visibility = View.GONE
         }
     }
 
@@ -203,10 +206,8 @@ class SelectLocationFragment : BaseFragment() {
     ) {
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                binding.savePoiButton.visibility = View.VISIBLE
                 enableUserLocation()
             } else {
-                binding.savePoiButton.visibility = View.GONE
                 snackbar = Snackbar.make(
                     requireContext(),
                     binding.savePoiButton,
@@ -214,19 +215,25 @@ class SelectLocationFragment : BaseFragment() {
                     Snackbar.LENGTH_INDEFINITE
                 )
                     .setAction(R.string.settings) {
-                        startActivity(Intent().apply {
+                        startActivityForResult(Intent().apply {
                             action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                             data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        })
+                        }, LOCATION_PERMISSION_REQUEST_CODE)
                     }
-                snackbar.show()
+                snackbar?.show()
             }
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE ) {
+            enableUserLocation()
+        }
+    }
+
     override fun onDestroy() {
-        snackbar.dismiss()
+        snackbar?.dismiss()
         super.onDestroy()
     }
 
