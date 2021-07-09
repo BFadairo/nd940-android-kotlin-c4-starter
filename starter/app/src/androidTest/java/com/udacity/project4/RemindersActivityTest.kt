@@ -8,11 +8,14 @@ import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
+import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.locationreminders.data.FakeAndroidTestDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.locationreminders.data.local.FakeAndroidRemindersRepository
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
@@ -21,6 +24,7 @@ import com.udacity.project4.util.DataBindingIdlingResource
 import com.udacity.project4.util.ToastMatcher
 import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.not
@@ -31,9 +35,11 @@ import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.inject
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
+import org.koin.test.inject
 
 
 @RunWith(AndroidJUnit4::class)
@@ -45,8 +51,10 @@ class RemindersActivityTest :
     // An idling resource that waits for Data Binding to have no pending bindings.
     private val dataBindingIdlingResource = DataBindingIdlingResource()
 
-    private lateinit var repository: ReminderDataSource
+    private var repository = FakeAndroidTestDataSource()
     private lateinit var appContext: Application
+
+    private lateinit var reminderListViewModel: RemindersListViewModel
 
     /**
      * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
@@ -60,13 +68,13 @@ class RemindersActivityTest :
             viewModel {
                 RemindersListViewModel(
                     appContext,
-                    get() as ReminderDataSource
+                    repository
                 )
             }
             single {
                 SaveReminderViewModel(
                     appContext,
-                    get() as ReminderDataSource
+                    repository
                 )
             }
             single { RemindersLocalRepository(get()) as ReminderDataSource }
@@ -77,7 +85,8 @@ class RemindersActivityTest :
             modules(listOf(myModule))
         }
         //Get our real repository
-        repository = get()
+//        repository = get()
+        reminderListViewModel = get()
 
         //clear the data to start fresh
         runBlocking {
@@ -121,9 +130,58 @@ class RemindersActivityTest :
         onView(withId(R.id.reminderDescription)).perform(replaceText("Test Description"))
 
         onView(withId(R.id.saveReminder)).perform(click())
-
         onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
         activityScenario.close()
     }
 
+    @Test
+    fun addReminder_noTitle() = runBlocking {
+        // GIVEN - A user wants to add a reminder
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        onView(withId(R.id.selectLocation)).perform(click())
+        // WHEN -
+        onView(withId(R.id.map)).check(matches(isDisplayed()))
+        onView(withId(R.id.map)).perform(longClick())
+
+        onView(withId(R.id.save_poi_button)).perform(click())
+        onView(withId(R.id.reminderDescription)).perform(replaceText("Test Description"))
+
+        onView(withId(R.id.saveReminder)).perform(click())
+        onView(withText(R.string.err_enter_title))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        activityScenario.close()
+    }
+
+    @Test
+    fun addReminder_noLocation() = runBlocking {
+        // GIVEN - A user wants to add a reminder
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        // WHEN - NO Location is Selected
+
+        onView(withId(R.id.reminderTitle)).perform(replaceText("Title"))
+        onView(withId(R.id.reminderDescription)).perform(replaceText("Test Description"))
+
+        onView(withId(R.id.saveReminder)).perform(click())
+        // THEN - A snackbar should show with "Please select a location"
+        onView(withText(R.string.err_select_location))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        activityScenario.close()
+    }
+
+    @Test
+    fun failedToLoadReminders() = runBlocking {
+        // GIVEN - A user wants to add a reminder
+        repository.setReturnError(true)
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        // WHEN - When the reminders fail to load
+        // THEN - There should be a snackbar displayed with "Reminders Not Found"
+        onView(withText("Reminders Not Found"))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        activityScenario.close()
+    }
 }

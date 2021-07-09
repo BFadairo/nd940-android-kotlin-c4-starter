@@ -89,8 +89,9 @@ class SaveReminderFragment : BaseFragment() {
 
             if (reminder.latitude != null && reminder.longitude != null) {
                 checkPermissionsAndStartGeofencing(reminder.id, reminder.latitude as Double, reminder.longitude as Double)
+            } else {
+                _viewModel.showSnackBar.value = getString(R.string.err_select_location)
             }
-
         }
     }
 
