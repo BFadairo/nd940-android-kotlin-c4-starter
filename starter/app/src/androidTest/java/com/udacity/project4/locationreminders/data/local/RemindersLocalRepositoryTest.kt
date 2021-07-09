@@ -63,6 +63,7 @@ class RemindersLocalRepositoryTest {
         val reminders = remindersLocalRepository.getReminders() as Result.Success
         // THEN -  reminders are loaded from the local data source
         assertThat(reminders.data, `is`(notNullValue()))
+        assertThat(reminders.data, `is`(not(emptyList())))
     }
 
     @Test
