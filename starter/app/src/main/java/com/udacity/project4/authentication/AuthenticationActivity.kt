@@ -13,6 +13,7 @@ import com.udacity.project4.R
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.utils.wrapEspressoIdlingResource
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the

@@ -32,10 +32,10 @@ android {
         returnDefaultValues = true
     }
 
-    //dataBinding {
-    //    enabled = true
-    //    enabledForTests = true
-    //}
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    
     buildFeatures {
         dataBinding true
     }

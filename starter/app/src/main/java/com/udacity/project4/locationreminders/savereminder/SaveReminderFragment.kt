@@ -38,7 +38,7 @@ import kotlin.math.log
 
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
-    override val _viewModel: SaveReminderViewModel by sharedViewModel()
+    override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var geoFencingClient: GeofencingClient
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var reminder: ReminderDataItem

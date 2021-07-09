@@ -23,22 +23,15 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.IdlingResource
-import java.util.UUID
+import java.util.*
 
-/**
- * An espresso idling resource implementation that reports idle status for all data binding
- * layouts. Data Binding uses a mechanism to post messages which Espresso doesn't track yet.
- *
- * Since this application only uses fragments, the resource only checks the fragments and their
- * children instead of the whole view tree.
- */
 class DataBindingIdlingResource : IdlingResource {
-    // list of registered callbacks
+    // List of registered callbacks
     private val idlingCallbacks = mutableListOf<IdlingResource.ResourceCallback>()
-    // give it a unique id to workaround an espresso bug where you cannot register/unregister
-    // an idling resource w/ the same name.
+    // Give it a unique id to work around an Espresso bug where you cannot register/unregister
+    // an idling resource with the same name.
     private val id = UUID.randomUUID().toString()
-    // holds whether isIdle is called and the result was false. We track this to avoid calling
+    // Holds whether isIdle was called and the result was false. We track this to avoid calling
     // onTransitionToIdle callbacks if Espresso never thought we were idle in the first place.
     private var wasNotIdle = false
 
@@ -51,13 +44,13 @@ class DataBindingIdlingResource : IdlingResource {
         @Suppress("LiftReturnOrAssignment")
         if (idle) {
             if (wasNotIdle) {
-                // notify observers to avoid espresso race detector
+                // Notify observers to avoid Espresso race detector.
                 idlingCallbacks.forEach { it.onTransitionToIdle() }
             }
             wasNotIdle = false
         } else {
             wasNotIdle = true
-            // check next frame
+            // Check next frame.
             activity.findViewById<View>(android.R.id.content).postDelayed({
                 isIdleNow
             }, 16)

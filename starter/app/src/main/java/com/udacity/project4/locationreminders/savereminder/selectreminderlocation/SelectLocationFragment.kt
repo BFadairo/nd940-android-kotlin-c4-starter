@@ -38,10 +38,11 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
+import com.udacity.project4.utils.wrapEspressoIdlingResource
 import org.koin.android.ext.android.inject
 import java.util.*
 
-class SelectLocationFragment : BaseFragment() {
+class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
@@ -64,26 +65,25 @@ class SelectLocationFragment : BaseFragment() {
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
         locationManager = LocationServices.getFusedLocationProviderClient(requireContext())
 
-        _viewModel.showSnackBar.observe(viewLifecycleOwner, Observer {
-
-        })
-
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync { map ->
-            googleMap = map
-            setPoiMapClick(googleMap)
-            setMapStyle(googleMap)
-            setMapClick(googleMap)
-            enableUserLocation()
-        }
 
         binding.savePoiButton.setOnClickListener {
             onLocationSelected()
         }
 
         return binding.root
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+        setPoiMapClick(googleMap)
+        setMapStyle(googleMap)
+        setMapClick(googleMap)
+        enableUserLocation()
     }
 
     private fun clearMapOnClick(map: GoogleMap) {
@@ -152,7 +152,6 @@ class SelectLocationFragment : BaseFragment() {
 
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_options, menu)
     }
@@ -181,7 +180,9 @@ class SelectLocationFragment : BaseFragment() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
             locationManager.lastLocation.addOnSuccessListener {
-                zoomToCurrentLocation(it)
+                if (it != null) {
+                    zoomToCurrentLocation(it)
+                }
             }
             binding.savePoiButton.visibility = View.VISIBLE
             googleMap.isMyLocationEnabled = true
