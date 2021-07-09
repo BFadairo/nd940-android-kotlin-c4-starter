@@ -15,7 +15,6 @@ import androidx.test.filters.LargeTest
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.FakeAndroidTestDataSource
 import com.udacity.project4.locationreminders.data.ReminderDataSource
-import com.udacity.project4.locationreminders.data.local.FakeAndroidRemindersRepository
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
@@ -168,7 +167,7 @@ class RemindersActivityTest :
         onView(withId(R.id.saveReminder)).perform(click())
         // THEN - A snackbar should show with "Please select a location"
         onView(withText(R.string.err_select_location))
-            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
         activityScenario.close()
     }
 
@@ -181,7 +180,7 @@ class RemindersActivityTest :
         // WHEN - When the reminders fail to load
         // THEN - There should be a snackbar displayed with "Reminders Not Found"
         onView(withText("Reminders Not Found"))
-            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
         activityScenario.close()
     }
 }
